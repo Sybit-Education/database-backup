@@ -1,6 +1,50 @@
 # database-backup
 
-Database Backup is a Docker container to make regular backups from database containers.
+Database-Backup is a Docker container to make regular backups from database containers and store them inside the own container. 
+
+## Setup
+
+### Setup Example Postgress
+
+```yml
+services:
+    database-backup:
+        image: ghcr.io/sybit-education/database-backup:main
+        container_name: database-backup
+        restart: always
+        depends_on:
+            - db-container-name
+        volumes:
+            - /data/backups:/app/backups
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - CONTAINER=db-container-name
+            - CRON=0 4 * * *
+            - BACKUP_CMD=pg_dump -U db-user -d db-name > dump.sql
+            - RESTORE_CMD=psql -U db-user -d db-name < dump.sql
+            - DUMP_PATH=dump.sql
+```
+
+### Setup Example MongoDB
+
+```yml
+services:
+    database-backup:
+        image: ghcr.io/sybit-education/database-backup:main
+        container_name: database-backup
+        restart: always
+        depends_on:
+            - db-container-name
+        volumes:
+            - /data/backups:/app/backups
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - CONTAINER=db-container-name
+            - CRON=0 4 * * *
+            - BACKUP_CMD=mongodump --gzip --archive=dump/dump.tar.gz
+            - RESTORE_CMD=mongorestore --gzip --archive=dump/dump.tar.gz
+            - DUMP_PATH=dump/dump.tar.gz
+```
 
 ## Manual Backup
 
